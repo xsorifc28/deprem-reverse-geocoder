@@ -89,7 +89,16 @@ try {
         }
       });
     } else {
-      console.log(`Error decoding ${geo_link}, ${decodeURIComponent(res2.request.res.responseUrl.split('?')[1].split('&')[0]?.replace(/g\+/, ' '))}`);
+      const addr = decodeURIComponent(res2.request.res.responseUrl.split('?')[1].split('&')[0]?.replace(/\+/g, ' ')).replace('q=', '');
+      if(addr !== 'utm_source=mstt_1' && addr !== 'shorturl=1') {
+        console.log(`Tried to resolve ${geo_link}, but inserting ${addr}`);
+        const insertStmt = `INSERT INTO geo_location(geo_link, mahalle) VALUES ($1, $2)`;
+        const insertQuery = {
+          text: insertStmt,
+          values: [geo_link, addr],
+        }
+        await client.query(insertQuery);
+      }
     }
   }
   process.exit(0);
